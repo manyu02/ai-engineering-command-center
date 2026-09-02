@@ -1,31 +1,26 @@
 from pydantic import BaseModel, Field
 
 
-class SkillRequirement(BaseModel):
+class SkillGapItem(BaseModel):
     skill: str
-    frequency: int = Field(ge=1)
-    evidence: list[str] = Field(default_factory=list)
+    current_level: str
+    required_level: str
+    gap: str
+    priority: str
 
 
-class MarketAnalysis(BaseModel):
-    role: str
-    location: str | None
-    jobs_analyzed: int
-    companies: list[str]
-    skills: list[SkillRequirement]
-    technologies: list[SkillRequirement]
-    observations: list[str]
-    limitations: list[str]
+class SkillGapResult(BaseModel):
+    summary: str
+    gaps: list[SkillGapItem] = Field(default_factory=list)
 
 
-class SkillGap(BaseModel):
-    skill: str
-    importance: int = Field(ge=1, le=10)
-    status: str
-    reason: str
+class RoadmapWeek(BaseModel):
+    week: int
+    focus: str
+    topics: list[str] = Field(default_factory=list)
+    deliverables: list[str] = Field(default_factory=list)
 
 
-class SkillGapAnalysis(BaseModel):
-    strengths: list[str]
-    gaps: list[SkillGap]
-    priorities: list[str]
+class RoadmapResult(BaseModel):
+    strategy: str
+    weeks: list[RoadmapWeek] = Field(default_factory=list)

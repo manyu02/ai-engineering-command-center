@@ -2,9 +2,10 @@ import json
 
 from langchain_ollama import ChatOllama
 
+from app.orchestrator.models import SkillGapResult
+
 
 class SkillGapAnalyzer:
-
     def __init__(self):
         self.llm = ChatOllama(
             model="llama3.2:1b",
@@ -15,43 +16,43 @@ class SkillGapAnalyzer:
         self,
         current_knowledge: list[str],
         market_analysis: str,
-    ):
-
+    ) -> dict:
         prompt = f"""
-You are a career skill-gap analyzer.
+You are a skill gap analysis engine.
 
 CURRENT KNOWLEDGE:
-{json.dumps(current_knowledge, ensure_ascii=False)}
+{current_knowledge}
 
-MARKET REQUIREMENTS:
+MARKET ANALYSIS:
 {market_analysis}
 
-Compare the user's current knowledge against the actual market
-requirements.
-
-Return ONLY valid JSON in this exact structure:
-
+Return ONLY valid JSON matching this exact structure:
 {{
-  "strengths": [],
-  "gaps": [],
-  "priorities": []
+  "summary": "brief summary",
+  "gaps": [
+    {{
+      "skill": "skill name",
+      "current_level": "beginner/intermediate/advanced",
+      "required_level": "beginner/intermediate/advanced",
+      "gap": "brief explanation",
+      "priority": "high/medium/low"
+    }}
+  ]
 }}
 
-Rules:
-- strengths = skills the user already has that align with the market.
-- gaps = important market skills missing from the user's knowledge.
-- priorities = gaps ordered from highest to lowest importance.
-- Do not invent requirements that are not present in the market analysis.
-- Keep each item short.
+Do not use markdown.
+Do not invent facts about the job market.
 """
 
         response = await self.llm.ainvoke(prompt)
-
         content = response.content.strip()
 
         if content.startswith("```"):
-            content = content.replace("```json", "")
-            content = content.replace("```", "")
-            content = content.strip()
+            content = content.replace("```json", "").replace("```", "").strip()
 
-        return json.loads(content)
+        try:
+            data = json.loads(content)
+            result = SkillGapResult.model_validate(data)
+            return result.model_dump()
+        except Exception as exc:
+            raise ValueError(f"Invalid skill gap output: {exc}") from exc
