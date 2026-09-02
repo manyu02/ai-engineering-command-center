@@ -34,19 +34,38 @@ def get_greenhouse_company(company: str):
     return None
 
 
-def role_matches(title: str, role: str) -> bool:
+def role_relevance_score(title: str, role: str) -> float:
     title_words = set(title.lower().replace("-", " ").split())
     role_words = {
         word
         for word in role.lower().replace("-", " ").split()
-        if len(word) > 2
+        if len(word) > 2 and word not in {"and", "the", "for"}
     }
 
     if not role_words:
-        return False
+        return 0.0
 
-    return any(word in title_words for word in role_words)
+    generic_words = {
+        "ai", "ml", "data", "engineer", "developer",
+        "software", "senior", "junior", "lead"
+    }
 
+    meaningful_words = role_words - generic_words
+
+    if not meaningful_words:
+        return 1.0 if title_words & role_words else 0.0
+
+    matches = len(title_words & meaningful_words)
+    score = matches / len(meaningful_words)
+
+    if role.lower().strip() == title.lower().strip():
+        score = 1.0
+
+    return round(min(score, 1.0), 2)
+
+
+def role_matches(title: str, role: str) -> bool:
+    return role_relevance_score(title, role) >= 0.5
 
 @mcp.tool()
 def search_jobs(
@@ -82,6 +101,7 @@ def search_jobs(
                     "job_id": f"greenhouse_{job['id']}",
                     "company": company_config["name"],
                     "title": title,
+                    "relevance_score": role_relevance_score(title, role),
                     "location": job_location,
                     "url": job.get("absolute_url"),
                     "source": "greenhouse",
