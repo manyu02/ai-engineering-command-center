@@ -1,0 +1,16 @@
+{
+  "role": "Applied AI Engineer",
+  "specialization": "LLM and Agentic AI",
+  "target_companies": [
+    "Anthropic",
+    "Microsoft"
+  ],
+  "preparation_days": 30,
+  "current_knowledge": [
+    "Python",
+    "LLMs",
+    "RAG",
+    "LangChain",
+    "MCP"
+  ]
+}

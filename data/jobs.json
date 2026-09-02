@@ -1,0 +1,70 @@
+[
+  {
+    "job_id": "JOB001",
+    "company": "Nexa AI",
+    "title": "Generative AI Engineer",
+    "location": "Bangalore, India",
+    "seniority": "Entry Level",
+    "requirements": [
+      "Python",
+      "LLMs",
+      "RAG",
+      "LangChain",
+      "Agentic AI",
+      "Vector Databases",
+      "REST APIs"
+    ],
+    "description": "Build and deploy production-grade generative AI applications using LLMs, retrieval augmented generation, agentic workflows and cloud services."
+  },
+  {
+    "job_id": "JOB002",
+    "company": "CloudNova",
+    "title": "AI Engineer",
+    "location": "Hyderabad, India",
+    "seniority": "Entry Level",
+    "requirements": [
+      "Python",
+      "Machine Learning",
+      "LLMs",
+      "RAG",
+      "AWS",
+      "Docker",
+      "FastAPI"
+    ],
+    "description": "Develop AI-powered applications and services using machine learning, large language models and cloud-native technologies."
+  },
+  {
+    "job_id": "JOB003",
+    "company": "Vertex Labs",
+    "title": "AI/ML Engineer",
+    "location": "Pune, India",
+    "seniority": "Junior",
+    "requirements": [
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "Transformers",
+      "LLMs",
+      "MLOps",
+      "Docker"
+    ],
+    "description": "Develop machine learning and generative AI solutions and contribute to production deployment, monitoring and model lifecycle management."
+  },
+  {
+    "job_id": "JOB004",
+    "company": "Nexa AI",
+    "title": "AI Agent Engineer",
+    "location": "Bangalore, India",
+    "seniority": "Junior",
+    "requirements": [
+      "Python",
+      "LLMs",
+      "Agentic AI",
+      "MCP",
+      "Tool Calling",
+      "LangGraph",
+      "APIs"
+    ],
+    "description": "Design autonomous AI agents capable of reasoning, tool usage and multi-step task execution using modern agent frameworks and Model Context Protocol."
+  }
+]

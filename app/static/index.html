@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Engineering Command Center</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: #0b1020;
+            color: #e8ecf7;
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: auto;
+        }
+
+        header {
+            padding: 28px 0;
+            border-bottom: 1px solid #252d45;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        header p {
+            color: #8f9bb7;
+            margin-bottom: 0;
+        }
+
+        main {
+            padding: 35px 0 60px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #121a2d;
+            border: 1px solid #27314b;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            color: #aeb8cf;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #303b59;
+            background: #0d1425;
+            color: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #647cff;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            border: 0;
+            border-radius: 8px;
+            background: #647cff;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: wait;
+        }
+
+        .status {
+            margin-top: 15px;
+            color: #8f9bb7;
+            font-size: 14px;
+        }
+
+        .result {
+            white-space: pre-wrap;
+            line-height: 1.65;
+            color: #dce3f5;
+        }
+
+        .job {
+            border-top: 1px solid #27314b;
+            padding: 15px 0;
+        }
+
+        .job:first-child {
+            border-top: 0;
+        }
+
+        .job-title {
+            font-weight: 600;
+        }
+
+        .job-meta {
+            color: #8f9bb7;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .empty {
+            color: #8f9bb7;
+        }
+
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="container">
+        <h1>AI Engineering Command Center</h1>
+        <p>Personalized AI career intelligence and preparation planning.</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="grid">
+
+        <section>
+            <div class="card">
+                <h2>Your Profile</h2>
+
+                <label>Target Role</label>
+                <input id="role" placeholder="e.g. Applied AI Engineer">
+
+                <label>Specialization</label>
+                <input id="specialization" placeholder="e.g. LLM and Agentic AI">
+
+                <label>Target Companies</label>
+                <input id="companies" placeholder="Anthropic, Microsoft">
+
+                <label>Preparation Days</label>
+                <input id="days" type="number" value="30">
+
+                <label>Current Knowledge</label>
+                <input id="knowledge" placeholder="Python, LLMs, RAG, LangChain, MCP">
+
+                <button id="saveBtn" onclick="saveProfile()">
+                    Save Profile
+                </button>
+
+                <button id="planBtn" onclick="generatePlan()">
+                    Generate Preparation Plan
+                </button>
+
+                <div id="status" class="status"></div>
+            </div>
+
+            <div class="card">
+                <h2>Market Intelligence</h2>
+                <button onclick="analyzeMarket()">
+                    Analyze Current Market
+                </button>
+
+                <div id="marketStatus" class="status"></div>
+            </div>
+        </section>
+
+        <section>
+
+            <div class="card">
+                <h2>Preparation Plan</h2>
+                <div id="plan" class="result empty">
+                    Your personalized preparation plan will appear here.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Market Analysis</h2>
+                <div id="market" class="result empty">
+                    Market intelligence will appear here.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Matching Jobs</h2>
+                <div id="jobs" class="empty">
+                    No jobs loaded yet.
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script>
+
+async function saveProfile() {
+
+    const button = document.getElementById("saveBtn");
+    const status = document.getElementById("status");
+
+    button.disabled = true;
+    status.textContent = "Saving profile...";
+
+    const profile = {
+        role: document.getElementById("role").value,
+        specialization: document.getElementById("specialization").value,
+        target_companies: document.getElementById("companies").value
+            .split(",")
+            .map(x => x.trim())
+            .filter(Boolean),
+        preparation_days: Number(document.getElementById("days").value),
+        current_knowledge: document.getElementById("knowledge").value
+            .split(",")
+            .map(x => x.trim())
+            .filter(Boolean)
+    };
+
+    try {
+
+        const response = await fetch("/api/v1/profile", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(profile)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Failed to save profile");
+        }
+
+        status.textContent = "Profile saved successfully.";
+
+    } catch (error) {
+        status.textContent = error.message;
+    }
+
+    button.disabled = false;
+}
+
+
+async function loadProfile() {
+
+    try {
+
+        const response = await fetch("/api/v1/profile");
+
+        if (!response.ok) {
+            return;
+        }
+
+        const profile = await response.json();
+
+        document.getElementById("role").value = profile.role || "";
+        document.getElementById("specialization").value =
+            profile.specialization || "";
+
+        document.getElementById("companies").value =
+            (profile.target_companies || []).join(", ");
+
+        document.getElementById("days").value =
+            profile.preparation_days || 30;
+
+        document.getElementById("knowledge").value =
+            (profile.current_knowledge || []).join(", ");
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
+async function generatePlan() {
+
+    const button = document.getElementById("planBtn");
+    const plan = document.getElementById("plan");
+    const status = document.getElementById("status");
+
+    button.disabled = true;
+    status.textContent = "Generating plan from live market data...";
+    plan.textContent = "Analyzing job market and generating roadmap...";
+
+    try {
+
+        const response = await fetch("/api/v1/plan/generate", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Plan generation failed");
+        }
+
+        plan.textContent = data.plan;
+        plan.classList.remove("empty");
+
+        status.textContent = "Preparation plan generated.";
+
+    } catch (error) {
+
+        plan.textContent = error.message;
+        status.textContent = "Generation failed.";
+
+    }
+
+    button.disabled = false;
+}
+
+
+async function analyzeMarket() {
+
+    const button = event.target;
+    const market = document.getElementById("market");
+    const jobsContainer = document.getElementById("jobs");
+    const status = document.getElementById("marketStatus");
+
+    button.disabled = true;
+
+    const role = document.getElementById("role").value;
+    const specialization = document.getElementById("specialization").value;
+
+    status.textContent = "Retrieving live job data...";
+    market.textContent = "Analyzing...";
+    jobsContainer.textContent = "Loading jobs...";
+
+    try {
+
+        const response = await fetch("/api/v1/market/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                role: role,
+                specialization: specialization
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Market analysis failed");
+        }
+
+        market.textContent = data.analysis;
+        market.classList.remove("empty");
+
+        renderJobs(data.jobs);
+
+        status.textContent =
+            `${data.jobs_found} jobs analyzed successfully.`;
+
+    } catch (error) {
+
+        market.textContent = error.message;
+        status.textContent = "Market analysis failed.";
+
+    }
+
+    button.disabled = false;
+}
+
+
+function renderJobs(jobs) {
+
+    const container = document.getElementById("jobs");
+
+    if (!jobs || jobs.length === 0) {
+        container.textContent = "No matching jobs found.";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    jobs.forEach(job => {
+
+        const div = document.createElement("div");
+        div.className = "job";
+
+        div.innerHTML = `
+            <div class="job-title">
+                ${escapeHtml(job.title || "")}
+            </div>
+
+            <div class="job-meta">
+                ${escapeHtml(job.company || "")}
+                ·
+                ${escapeHtml(job.location || "Location unavailable")}
+            </div>
+
+            ${
+                job.url
+                ? `<div class="job-meta">
+                    <a href="${escapeHtml(job.url)}"
+                       target="_blank"
+                       rel="noopener"
+                       style="color:#8fa1ff">
+                       View job
+                    </a>
+                   </div>`
+                : ""
+            }
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+loadProfile();
+
+</script>
+
+</body>
+</html>
