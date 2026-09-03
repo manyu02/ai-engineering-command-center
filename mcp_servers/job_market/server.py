@@ -181,36 +181,53 @@ def get_market_snapshot(
     location: str | None = None,
     max_jobs: int = 10,
 ) -> dict:
-    """
-    Retrieve a grounded job-market snapshot.
-
-    Searches live jobs and retrieves their actual job descriptions.
-    The returned information must be treated as the source of truth
-    for market analysis.
-    """
-
-    jobs = search_jobs(
-        role=role,
-        location=location,
-    )
-
+    jobs = search_jobs(role=role, location=location)
     jobs = jobs[:max_jobs]
 
     enriched_jobs = []
 
     for job in jobs:
         description = get_job_description(job["job_id"])
-
         enriched_jobs.append({
             "job": job,
             "description": description,
         })
 
+    ranked_jobs = sorted(
+        enriched_jobs,
+        key=lambda item: item["job"].get("relevance_score", 0),
+        reverse=True,
+    )
+
+    companies = [
+        item["job"].get("company")
+        for item in ranked_jobs
+        if item["job"].get("company")
+    ]
+
+    locations = [
+        item["job"].get("location")
+        for item in ranked_jobs
+        if item["job"].get("location")
+    ]
+
+    scores = [
+        item["job"].get("relevance_score", 0)
+        for item in ranked_jobs
+    ]
+
     return {
         "role": role,
         "location": location,
-        "jobs_analyzed": len(enriched_jobs),
-        "jobs": enriched_jobs,
+        "jobs_analyzed": len(ranked_jobs),
+        "jobs": ranked_jobs,
+        "market_stats": {
+            "companies": sorted(set(companies)),
+            "locations": sorted(set(locations)),
+            "average_relevance_score": round(
+                sum(scores) / len(scores), 2
+            ) if scores else 0.0,
+        },
         "source": "live_greenhouse",
         "instruction": (
             "Use only the supplied job data when making factual claims "
@@ -218,7 +235,6 @@ def get_market_snapshot(
             "requirements, or job details."
         ),
     }
-
 
 if __name__ == "__main__":
     mcp.run()

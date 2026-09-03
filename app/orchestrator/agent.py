@@ -71,13 +71,33 @@ class JobMarketAgent:
 
         tool = self._get_tool("get_market_snapshot")
 
-        return await tool.ainvoke(
+        result = await tool.ainvoke(
             {
                 "role": role,
                 "location": location,
                 "max_jobs": 10,
             }
         )
+
+        if isinstance(result, dict):
+            return result
+
+        if isinstance(result, list):
+            for item in result:
+                if isinstance(item, dict):
+                    if "text" in item:
+                        return item["text"]
+                    return item
+
+                text = getattr(item, "text", None)
+                if text:
+                    return text
+
+        text = getattr(result, "text", None)
+        if text:
+            return text
+
+        return result
 
     async def analyze(
         self,
@@ -90,8 +110,46 @@ class JobMarketAgent:
             location=location,
         )
 
+        if isinstance(snapshot, str):
+            import json
+
+            try:
+                snapshot = json.loads(snapshot)
+            except json.JSONDecodeError:
+                snapshot = None
+
         if isinstance(snapshot, dict) and "text" in snapshot:
-            snapshot = snapshot["text"]
+            import json
+
+            try:
+                snapshot = json.loads(snapshot["text"])
+            except (TypeError, json.JSONDecodeError):
+                snapshot = snapshot["text"]
+
+        if not isinstance(snapshot, dict):
+            return {
+                "role": role,
+                "location": location,
+                "specialization": specialization,
+                "jobs_found": 0,
+                "jobs": [],
+                "market_stats": {},
+                "analysis": "Market data could not be parsed.",
+            }
+
+        if not snapshot.get("jobs"):
+            return {
+                "role": role,
+                "location": location,
+                "specialization": specialization,
+                "jobs_found": 0,
+                "jobs": [],
+                "market_stats": snapshot.get("market_stats", {}),
+                "analysis": (
+                    "No matching jobs were found from the configured live sources. "
+                    "Market analysis was not generated."
+                ),
+            }
 
         prompt = f"""
 You are a career intelligence engine.
@@ -144,6 +202,11 @@ Return:
             "specialization": specialization,
             "jobs_found": len(jobs),
             "jobs": jobs,
+            "market_stats": (
+                snapshot.get("market_stats", {})
+                if isinstance(snapshot, dict)
+                else {}
+            ),
             "analysis": response.content,
         }
 
