@@ -1,0 +1,22 @@
+[
+  {
+    "topic": "RAG",
+    "content": "Retrieval-Augmented Generation combines document retrieval with LLM generation. Core steps are ingestion, chunking, embedding, retrieval, and grounded response generation."
+  },
+  {
+    "topic": "LLM Agents",
+    "content": "LLM agents use a language model to plan tasks, select tools, execute actions, observe results, and continue until the task is complete."
+  },
+  {
+    "topic": "MCP",
+    "content": "Model Context Protocol standardizes how AI applications discover and call external tools and resources through MCP servers."
+  },
+  {
+    "topic": "Observability",
+    "content": "AI system observability includes logs, metrics, traces, latency, token usage, errors, and evaluation signals."
+  },
+  {
+    "topic": "Prompt Engineering",
+    "content": "Effective prompts define the role, context, constraints, expected output format, and grounding requirements."
+  }
+]
