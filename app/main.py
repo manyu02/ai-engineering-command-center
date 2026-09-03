@@ -9,13 +9,13 @@ from app.orchestrator.skill_gap import SkillGapAnalyzer
 from app.orchestrator.roadmap import RoadmapGenerator
 from app.orchestrator.rag import RAGEngine
 from app.orchestrator.candidate_intelligence import CandidateIntelligence
-
+from app.orchestrator.interview import InterviewAgent
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
 candidate_intelligence = CandidateIntelligence()
 rag_engine = RAGEngine()
-
+interview_agent = InterviewAgent(agent.llm)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await agent.initialize()
@@ -163,6 +163,18 @@ async def command_center(request: CommandCenterRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Command center analysis failed: {str(exc)}",
+        )
+@app.post("/api/v1/interview/question")
+async def interview_question(request: MarketAnalysisRequest):
+    try:
+        return await interview_agent.generate_question(
+            role=request.role,
+            specialization=request.specialization,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Interview question generation failed: {str(exc)}",
         )
 app.mount(
     "/",
