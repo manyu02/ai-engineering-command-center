@@ -7,10 +7,12 @@ from app.profile_store import load_profile, save_profile
 from app.orchestrator.agent import JobMarketAgent
 from app.orchestrator.skill_gap import SkillGapAnalyzer
 from app.orchestrator.roadmap import RoadmapGenerator
+from app.orchestrator.candidate_intelligence import CandidateIntelligence
 
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
+candidate_intelligence = CandidateIntelligence()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -123,6 +125,11 @@ async def command_center(request: CommandCenterRequest):
             market_analysis=market["analysis"],
         )
 
+        candidate = candidate_intelligence.analyze(
+            current_knowledge=request.current_knowledge,
+            jobs=market.get("jobs", []),
+        )
+
         roadmap = await roadmap_generator.generate(
             role=request.role,
             specialization=request.specialization,
@@ -141,6 +148,7 @@ async def command_center(request: CommandCenterRequest):
             },
             "market": market,
             "skill_gap": skill_gap,
+            "candidate_intelligence": candidate,
             "roadmap": roadmap,
         }
 
