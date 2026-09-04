@@ -12,6 +12,7 @@ from app.orchestrator.rag import RAGEngine
 from app.orchestrator.candidate_intelligence import CandidateIntelligence
 from app.orchestrator.interview import InterviewAgent
 from app.orchestrator.adaptive_learning import AdaptiveLearning
+from app.middleware import RequestLoggingMiddleware
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
@@ -32,6 +33,7 @@ app = FastAPI(
     version="0.3.0",
     lifespan=lifespan,
 )
+app.add_middleware(RequestLoggingMiddleware)
 
 
 class CommandCenterRequest(BaseModel):
