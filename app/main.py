@@ -11,6 +11,7 @@ from app.orchestrator.roadmap import RoadmapGenerator
 from app.orchestrator.rag import RAGEngine
 from app.orchestrator.candidate_intelligence import CandidateIntelligence
 from app.orchestrator.interview import InterviewAgent
+from app.orchestrator.adaptive_learning import AdaptiveLearning
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
@@ -18,6 +19,7 @@ candidate_intelligence = CandidateIntelligence()
 rag_engine = RAGEngine()
 interview_agent = InterviewAgent(agent.llm)
 interview_evaluator = InterviewEvaluator(agent.llm)
+adaptive_learning = AdaptiveLearning()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await agent.initialize()
@@ -49,6 +51,8 @@ class InterviewEvaluationRequest(BaseModel):
     role: str = Field(min_length=2)
     question: str = Field(min_length=5)
     answer: str = Field(min_length=1)
+class AdaptiveLearningRequest(BaseModel):
+    evaluation: dict
 @app.get("/health")
 async def health():
     return {
@@ -193,6 +197,15 @@ async def evaluate_interview(request: InterviewEvaluationRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Interview evaluation failed: {str(exc)}",
+        )
+@app.post("/api/v1/learning/adjust")
+async def adjust_learning(request: AdaptiveLearningRequest):
+    try:
+        return adaptive_learning.generate_adjustments(request.evaluation)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Learning adjustment failed: {str(exc)}",
         )
 app.mount(
     "/",
