@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from app.orchestrator.interview_evaluation import InterviewEvaluator
 from app.profile import UserProfile
 from app.profile_store import load_profile, save_profile
 from app.orchestrator.agent import JobMarketAgent
@@ -16,6 +17,7 @@ roadmap_generator = RoadmapGenerator()
 candidate_intelligence = CandidateIntelligence()
 rag_engine = RAGEngine()
 interview_agent = InterviewAgent(agent.llm)
+interview_evaluator = InterviewEvaluator(agent.llm)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await agent.initialize()
@@ -43,7 +45,10 @@ class MarketAnalysisRequest(BaseModel):
     location: str | None = None
     specialization: str | None = None
 
-
+class InterviewEvaluationRequest(BaseModel):
+    role: str = Field(min_length=2)
+    question: str = Field(min_length=5)
+    answer: str = Field(min_length=1)
 @app.get("/health")
 async def health():
     return {
@@ -175,6 +180,19 @@ async def interview_question(request: MarketAnalysisRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Interview question generation failed: {str(exc)}",
+        )
+@app.post("/api/v1/interview/evaluate")
+async def evaluate_interview(request: InterviewEvaluationRequest):
+    try:
+        return await interview_evaluator.evaluate(
+            role=request.role,
+            question=request.question,
+            answer=request.answer,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Interview evaluation failed: {str(exc)}",
         )
 app.mount(
     "/",
