@@ -13,6 +13,7 @@ from app.orchestrator.candidate_intelligence import CandidateIntelligence
 from app.orchestrator.interview import InterviewAgent
 from app.orchestrator.adaptive_learning import AdaptiveLearning
 from app.middleware import RequestLoggingMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
@@ -34,7 +35,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.add_middleware(RequestLoggingMiddleware)
-
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 class CommandCenterRequest(BaseModel):
     role: str = Field(min_length=2)
