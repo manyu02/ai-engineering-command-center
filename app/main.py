@@ -14,6 +14,12 @@ from app.orchestrator.interview import InterviewAgent
 from app.orchestrator.adaptive_learning import AdaptiveLearning
 from app.middleware import RequestLoggingMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 agent = JobMarketAgent()
 skill_gap_analyzer = SkillGapAnalyzer()
 roadmap_generator = RoadmapGenerator()
@@ -34,6 +40,27 @@ app = FastAPI(
     version="0.3.0",
     lifespan=lifespan,
 )
+resource = Resource.create(
+    {
+        "service.name": "ai-command-center",
+        "service.version": "1.0.0",
+    }
+)
+
+tracer_provider = TracerProvider(resource=resource)
+
+otlp_exporter = OTLPSpanExporter(
+    endpoint="http://localhost:4317",
+    insecure=True,
+)
+
+tracer_provider.add_span_processor(
+    BatchSpanProcessor(otlp_exporter)
+)
+
+trace.set_tracer_provider(tracer_provider)
+
+FastAPIInstrumentor.instrument_app(app)
 app.add_middleware(RequestLoggingMiddleware)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
