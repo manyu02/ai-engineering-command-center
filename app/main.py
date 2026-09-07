@@ -50,7 +50,7 @@ resource = Resource.create(
 tracer_provider = TracerProvider(resource=resource)
 
 otlp_exporter = OTLPSpanExporter(
-    endpoint="http://localhost:4317",
+    endpoint="http://127.0.0.1:4317",
     insecure=True,
 )
 
