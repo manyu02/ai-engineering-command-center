@@ -41,7 +41,17 @@ Rules:
 """
 
         response = await self.llm.ainvoke(prompt)
-        content = response.content.strip()
+
+        content = response.content
+        if isinstance(content, list):
+            content = "\n".join(
+                item.get("text", "")
+                if isinstance(item, dict)
+                else str(item)
+                for item in content
+            )
+
+        content = str(content).strip()
 
         if content.startswith("```"):
             content = content.replace("```json", "").replace("```", "").strip()
@@ -49,9 +59,7 @@ Rules:
         evaluation = json.loads(content)
 
         evaluation["adaptive_learning"] = (
-            self.adaptive_learning.generate_adjustments(
-                evaluation
-            )
+            self.adaptive_learning.generate_adjustments(evaluation)
         )
 
         return evaluation
