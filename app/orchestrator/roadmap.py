@@ -1,74 +1,141 @@
-import json
-
-from langchain_ollama import ChatOllama
-
 from app.orchestrator.models import RoadmapResult
 
 
 class RoadmapGenerator:
-    def __init__(self):
-        self.llm = ChatOllama(
-            model="llama3.2:1b",
-            temperature=0,
-        )
-
     async def generate(
         self,
-        role: str,
-        specialization: str | None,
-        preparation_days: int,
-        current_knowledge: list[str],
-        skill_gap: dict,
+        role,
+        specialization,
+        preparation_days,
+        current_knowledge,
+        skill_gap,
+        adaptive_learning=None,
     ) -> dict:
-        prompt = f"""
-You are a career roadmap generation engine.
+        gaps = skill_gap.get("gaps", [])
+        adaptive_learning = adaptive_learning or {}
 
-ROLE:
-{role}
+        high_priority = [
+            gap["skill"]
+            for gap in gaps
+            if gap.get("priority") == "high"
+        ]
 
-SPECIALIZATION:
-{specialization}
+        medium_priority = [
+            gap["skill"]
+            for gap in gaps
+            if gap.get("priority") == "medium"
+        ]
 
-PREPARATION DAYS:
-{preparation_days}
+        adaptive_topics = adaptive_learning.get("focus_topics", [])
 
-CURRENT KNOWLEDGE:
-{current_knowledge}
+        priority_topics = []
+        for topic in adaptive_topics + high_priority + medium_priority:
+            if topic and topic not in priority_topics:
+                priority_topics.append(topic)
 
-SKILL GAP:
-{skill_gap}
+        if not priority_topics:
+            priority_topics = [
+                "Python",
+                "Prompt Engineering",
+                "Cloud Deployment",
+            ]
 
-Create a practical preparation roadmap.
+        cloud_priority = {
+            "azure": 5,
+            "aws": 4,
+            "gcp": 4,
+        }
 
-Return ONLY valid JSON matching this exact structure:
-{{
-  "strategy": "brief overall strategy",
-  "weeks": [
-    {{
-      "week": 1,
-      "focus": "main focus",
-      "topics": ["topic 1", "topic 2"],
-      "deliverables": ["deliverable 1", "deliverable 2"]
-    }}
-  ]
-}}
+        cloud_topics = [
+            topic for topic in priority_topics
+            if topic.lower() in cloud_priority
+        ]
 
-Rules:
-- Use only information supported by the supplied skill gap and profile.
-- Do not invent job requirements.
-- Keep the roadmap realistic for the available preparation time.
-- Do not use markdown.
-"""
+        primary_cloud = None
+        if cloud_topics:
+            primary_cloud = max(
+                cloud_topics,
+                key=lambda topic: cloud_priority[topic.lower()],
+            )
 
-        response = await self.llm.ainvoke(prompt)
-        content = response.content.strip()
+        foundational_topics = [
+            topic for topic in priority_topics
+            if topic.lower() not in {"azure", "aws", "gcp", "cloud"}
+        ]
 
-        if content.startswith("```"):
-            content = content.replace("```json", "").replace("```", "").strip()
+        total_weeks = max(1, (preparation_days + 6) // 7)
 
-        try:
-            data = json.loads(content)
-            result = RoadmapResult.model_validate(data)
-            return result.model_dump()
-        except Exception as exc:
-            raise ValueError(f"Invalid roadmap output: {exc}") from exc
+        phases = [
+            {
+                "focus": "Close the highest-priority engineering gaps",
+                "topics": foundational_topics[:2] or ["Python"],
+                "project": f"Build a focused {role} implementation using {foundational_topics[0] if foundational_topics else 'Python'}",
+            },
+            {
+                "focus": "Build cloud deployment capability",
+                "topics": [primary_cloud or "Cloud Deployment"],
+                "project": f"Deploy the {role} project using {primary_cloud or 'a cloud platform'}",
+            },
+            {
+                "focus": "Build production-grade AI engineering capability",
+                "topics": [
+                    "AI System Integration",
+                    "Evaluation",
+                    "Observability",
+                ],
+                "project": f"Productionize and evaluate the {role} project",
+            },
+            {
+                "focus": "Apply the complete skill stack in a capstone",
+                "topics": [
+                    specialization or "Generative AI",
+                    "Production AI Engineering",
+                ],
+                "project": f"Build and document an end-to-end {role} capstone project",
+            },
+            {
+                "focus": "Interview readiness and portfolio consolidation",
+                "topics": [
+                    "System Design",
+                    "Technical Interview Practice",
+                ],
+                "project": f"Finalize and present the {role} portfolio project",
+            },
+        ]
+
+        phases = phases[:total_weeks]
+
+        weeks = []
+
+        for index, phase in enumerate(phases, start=1):
+            topics = phase["topics"]
+
+            weeks.append({
+                "week": index,
+                "focus": phase["focus"],
+                "topics": topics,
+                "skills": topics,
+                "projects": [phase["project"]],
+                "resources": [
+                    "Official documentation",
+                    "Hands-on implementation",
+                    "Real job requirements",
+                ],
+                "milestones": [
+                    f"Demonstrate working knowledge of {topics[0]}"
+                ],
+                "deliverables": [
+                    f"Working implementation related to {topics[0]}"
+                ],
+            })
+
+        result = RoadmapResult(
+            strategy=(
+                f"Prepare for the {role} role through a progressive sequence "
+                f"of foundational skill gaps, cloud deployment, production AI "
+                f"engineering, capstone implementation and interview readiness."
+            ),
+            weeks=weeks,
+        )
+
+        return result.model_dump()

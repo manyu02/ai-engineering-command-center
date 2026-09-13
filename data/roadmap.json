@@ -1,0 +1,155 @@
+{
+  "fingerprint": "bb97edd1c298265fb8841a59819d0ebaadfeb894b88502932d84dbff39774547",
+  "roadmap": {
+    "role": "Project Manager",
+    "specialization": "Marketing and Analytics",
+    "preparation_days": 12,
+    "target_companies": [
+      "Google",
+      "Amazon",
+      "Microsoft"
+    ],
+    "current_knowledge": [
+      "Power BI",
+      "SEO",
+      "Social Media Marketing"
+    ],
+    "market_jobs_analyzed": 10,
+    "market_signals": [
+      "Rust appears in 3/10 relevant jobs.",
+      "Security appears in 2/10 relevant jobs.",
+      "Machine Learning appears in 1/10 relevant jobs.",
+      "Artificial Intelligence appears in 1/10 relevant jobs.",
+      "AWS appears in 1/10 relevant jobs.",
+      "Snowflake appears in 1/10 relevant jobs.",
+      "Go appears in 1/10 relevant jobs.",
+      "Reliability appears in 1/10 relevant jobs."
+    ],
+    "priority_gaps": [
+      {
+        "skill": "Rust",
+        "reason": "Required by 3/10 relevant jobs and not clearly covered by the current knowledge profile.",
+        "priority": "high"
+      },
+      {
+        "skill": "Security",
+        "reason": "Required by 2/10 relevant jobs and not clearly covered by the current knowledge profile.",
+        "priority": "medium"
+      },
+      {
+        "skill": "Machine Learning",
+        "reason": "Required by 1/10 relevant jobs and not clearly covered by the current knowledge profile.",
+        "priority": "low"
+      },
+      {
+        "skill": "Artificial Intelligence",
+        "reason": "Required by 1/10 relevant jobs and not clearly covered by the current knowledge profile.",
+        "priority": "low"
+      },
+      {
+        "skill": "AWS",
+        "reason": "Required by 1/10 relevant jobs and not clearly covered by the current knowledge profile.",
+        "priority": "low"
+      }
+    ],
+    "roadmap": [
+      {
+        "day": 1,
+        "topic": "Rust",
+        "why": "Required by 3/10 relevant jobs.",
+        "learn": [
+          "Rust ownership and borrowing"
+        ]
+      },
+      {
+        "day": 2,
+        "topic": "Rust",
+        "why": "Required by 3/10 relevant jobs.",
+        "learn": [
+          "safe systems programming"
+        ]
+      },
+      {
+        "day": 3,
+        "topic": "Rust",
+        "why": "Required by 3/10 relevant jobs.",
+        "learn": [
+          "testing and performance"
+        ]
+      },
+      {
+        "day": 4,
+        "topic": "Rust — Applied Practice",
+        "why": "Required by 3/10 relevant jobs.",
+        "learn": [
+          "Applied practice: Rust ownership and borrowing"
+        ]
+      },
+      {
+        "day": 5,
+        "topic": "Security",
+        "why": "Required by 2/10 relevant jobs.",
+        "learn": [
+          "application security fundamentals"
+        ]
+      },
+      {
+        "day": 6,
+        "topic": "Security",
+        "why": "Required by 2/10 relevant jobs.",
+        "learn": [
+          "authentication and authorization"
+        ]
+      },
+      {
+        "day": 7,
+        "topic": "Machine Learning",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "supervised and unsupervised learning"
+        ]
+      },
+      {
+        "day": 8,
+        "topic": "Artificial Intelligence",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "Artificial Intelligence fundamentals and core concepts"
+        ]
+      },
+      {
+        "day": 9,
+        "topic": "AWS",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "AWS architecture fundamentals"
+        ]
+      },
+      {
+        "day": 10,
+        "topic": "Snowflake",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "Snowflake architecture"
+        ]
+      },
+      {
+        "day": 11,
+        "topic": "Go",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "Go language fundamentals"
+        ]
+      },
+      {
+        "day": 12,
+        "topic": "Reliability",
+        "why": "Required by 1/10 relevant jobs.",
+        "learn": [
+          "failure modes"
+        ]
+      }
+    ],
+    "cached": false
+  }
+}

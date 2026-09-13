@@ -1,10 +1,13 @@
 import json
 
+from app.orchestrator.adaptive_learning import AdaptiveLearning
+
 
 class InterviewEvaluator:
 
     def __init__(self, llm):
         self.llm = llm
+        self.adaptive_learning = AdaptiveLearning()
 
     async def evaluate(self, role, question, answer):
         prompt = f"""
@@ -43,4 +46,12 @@ Rules:
         if content.startswith("```"):
             content = content.replace("```json", "").replace("```", "").strip()
 
-        return json.loads(content)
+        evaluation = json.loads(content)
+
+        evaluation["adaptive_learning"] = (
+            self.adaptive_learning.generate_adjustments(
+                evaluation
+            )
+        )
+
+        return evaluation

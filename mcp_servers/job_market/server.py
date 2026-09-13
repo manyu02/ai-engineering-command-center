@@ -8,6 +8,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from mcp.server.fastmcp import FastMCP
 
+from app.job_sources.search import search_jobs as unified_search_jobs
 from app.job_sources.greenhouse import (
     get_jobs,
     get_job_description as fetch_job_description,
@@ -46,8 +47,15 @@ def role_relevance_score(title: str, role: str) -> float:
         return 0.0
 
     generic_words = {
-        "ai", "ml", "data", "engineer", "developer",
-        "software", "senior", "junior", "lead"
+        "ai",
+        "ml",
+        "data",
+        "engineer",
+        "developer",
+        "software",
+        "senior",
+        "junior",
+        "lead",
     }
 
     meaningful_words = role_words - generic_words
@@ -67,47 +75,22 @@ def role_relevance_score(title: str, role: str) -> float:
 def role_matches(title: str, role: str) -> bool:
     return role_relevance_score(title, role) >= 0.5
 
+
 @mcp.tool()
 def search_jobs(
     role: str,
     location: str | None = None,
-    seniority: str | None = None,
-) -> list[dict]:
-    """Search live Greenhouse jobs by role and optional location."""
+    specialization: str | None = None,
+    max_jobs: int = 10,
+) -> dict:
+    """Search jobs across multiple live public job sources."""
 
-    results = []
-
-    for company_config in GREENHOUSE_COMPANIES.values():
-        data = get_jobs(company_config["board_token"])
-
-        for job in data.get("jobs", []):
-            title = job.get("title", "")
-            job_location = job.get("location", {}).get("name", "")
-
-            role_match = role_matches(title, role)
-
-            location_match = (
-                location is None
-                or location.lower() in job_location.lower()
-            )
-
-            seniority_match = (
-                seniority is None
-                or seniority.lower() in title.lower()
-            )
-
-            if role_match and location_match and seniority_match:
-                results.append({
-                    "job_id": f"greenhouse_{job['id']}",
-                    "company": company_config["name"],
-                    "title": title,
-                    "relevance_score": role_relevance_score(title, role),
-                    "location": job_location,
-                    "url": job.get("absolute_url"),
-                    "source": "greenhouse",
-                })
-
-    return results
+    return unified_search_jobs(
+        role=role,
+        location=location,
+        specialization=specialization,
+        max_jobs=max_jobs,
+    )
 
 
 @mcp.tool()
@@ -179,62 +162,56 @@ def get_company_jobs(
 def get_market_snapshot(
     role: str,
     location: str | None = None,
+    specialization: str | None = None,
     max_jobs: int = 10,
 ) -> dict:
-    jobs = search_jobs(role=role, location=location)
-    jobs = jobs[:max_jobs]
+    """Return a ranked market snapshot from live public job sources."""
 
-    enriched_jobs = []
-
-    for job in jobs:
-        description = get_job_description(job["job_id"])
-        enriched_jobs.append({
-            "job": job,
-            "description": description,
-        })
-
-    ranked_jobs = sorted(
-        enriched_jobs,
-        key=lambda item: item["job"].get("relevance_score", 0),
-        reverse=True,
+    result = unified_search_jobs(
+        role=role,
+        location=location,
+        specialization=specialization,
+        max_jobs=max_jobs,
     )
 
+    jobs = result.get("jobs", [])
+
     companies = [
-        item["job"].get("company")
-        for item in ranked_jobs
-        if item["job"].get("company")
+        item["job"].company
+        for item in jobs
+        if item.get("job") and item["job"].company
     ]
 
     locations = [
-        item["job"].get("location")
-        for item in ranked_jobs
-        if item["job"].get("location")
+        item["job"].location
+        for item in jobs
+        if item.get("job") and item["job"].location
     ]
 
     scores = [
-        item["job"].get("relevance_score", 0)
-        for item in ranked_jobs
+        item.get("relevance_score", 0)
+        for item in jobs
     ]
 
     return {
-        "role": role,
-        "location": location,
-        "jobs_analyzed": len(ranked_jobs),
-        "jobs": ranked_jobs,
+        **result,
+        "jobs_analyzed": len(jobs),
         "market_stats": {
             "companies": sorted(set(companies)),
             "locations": sorted(set(locations)),
             "average_relevance_score": round(
-                sum(scores) / len(scores), 2
+                sum(scores) / len(scores),
+                2,
             ) if scores else 0.0,
         },
-        "source": "live_greenhouse",
+        "source": "unified_public_job_sources",
         "instruction": (
             "Use only the supplied job data when making factual claims "
             "about this market. Do not invent salaries, companies, "
             "requirements, or job details."
         ),
     }
+
 
 if __name__ == "__main__":
     mcp.run()

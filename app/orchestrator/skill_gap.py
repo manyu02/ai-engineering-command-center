@@ -1,58 +1,51 @@
-import json
-
-from langchain_ollama import ChatOllama
-
 from app.orchestrator.models import SkillGapResult
 
 
 class SkillGapAnalyzer:
-    def __init__(self):
-        self.llm = ChatOllama(
-            model="llama3.2:1b",
-            temperature=0,
+    async def analyze(self, current_knowledge: list[str], market_analysis: str) -> dict:
+        known = {item.strip().lower() for item in current_knowledge if item.strip()}
+
+        skills = [
+            ("Python", "intermediate", "high"),
+            ("LLMs", "intermediate", "high"),
+            ("RAG", "intermediate", "high"),
+            ("Agents", "intermediate", "high"),
+            ("MCP", "intermediate", "high"),
+            ("LangChain", "intermediate", "medium"),
+            ("Prompt Engineering", "intermediate", "medium"),
+            ("Vector Databases", "intermediate", "medium"),
+            ("FastAPI", "intermediate", "medium"),
+            ("Docker", "intermediate", "medium"),
+            ("Kubernetes", "intermediate", "low"),
+            ("Cloud", "intermediate", "medium"),
+            ("AWS", "intermediate", "medium"),
+            ("Azure", "intermediate", "medium"),
+            ("GCP", "intermediate", "medium"),
+        ]
+
+        gaps = []
+
+        for skill, required_level, priority in skills:
+            if skill.lower() in known:
+                continue
+
+            if skill.lower() not in market_analysis.lower():
+                continue
+
+            gaps.append({
+                "skill": skill,
+                "current_level": "beginner",
+                "required_level": required_level,
+                "gap": f"{skill} is relevant to the current market requirements but is not listed in the candidate's current knowledge.",
+                "priority": priority,
+            })
+
+        result = SkillGapResult(
+            summary=(
+                "Focus on the highest-priority market skills that are not yet "
+                "covered by the candidate's current knowledge."
+            ),
+            gaps=gaps[:8],
         )
 
-    async def analyze(
-        self,
-        current_knowledge: list[str],
-        market_analysis: str,
-    ) -> dict:
-        prompt = f"""
-You are a skill gap analysis engine.
-
-CURRENT KNOWLEDGE:
-{current_knowledge}
-
-MARKET ANALYSIS:
-{market_analysis}
-
-Return ONLY valid JSON matching this exact structure:
-{{
-  "summary": "brief summary",
-  "gaps": [
-    {{
-      "skill": "skill name",
-      "current_level": "beginner/intermediate/advanced",
-      "required_level": "beginner/intermediate/advanced",
-      "gap": "brief explanation",
-      "priority": "high/medium/low"
-    }}
-  ]
-}}
-
-Do not use markdown.
-Do not invent facts about the job market.
-"""
-
-        response = await self.llm.ainvoke(prompt)
-        content = response.content.strip()
-
-        if content.startswith("```"):
-            content = content.replace("```json", "").replace("```", "").strip()
-
-        try:
-            data = json.loads(content)
-            result = SkillGapResult.model_validate(data)
-            return result.model_dump()
-        except Exception as exc:
-            raise ValueError(f"Invalid skill gap output: {exc}") from exc
+        return result.model_dump()

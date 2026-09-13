@@ -6,140 +6,516 @@
     <title>AI Engineering Command Center</title>
 
     <style>
+        :root {
+            --bg: #080d1a;
+            --surface: rgba(18, 27, 48, 0.88);
+            --surface-light: #18243d;
+            --border: rgba(130, 151, 200, 0.2);
+            --text: #edf3ff;
+            --muted: #93a3c4;
+            --primary: #7185ff;
+            --primary-dark: #566cf0;
+            --success: #43d19a;
+            --danger: #ff7187;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
         * {
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
-            font-family: Inter, Arial, sans-serif;
-            background: #0b1020;
-            color: #e8ecf7;
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 10% 0%, rgba(113, 133, 255, 0.18), transparent 35%),
+                radial-gradient(circle at 90% 10%, rgba(67, 209, 154, 0.08), transparent 30%),
+                var(--bg);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, black, transparent);
         }
 
         .container {
-            width: min(1100px, 92%);
+            width: min(1200px, 92%);
             margin: auto;
         }
 
         header {
-            padding: 28px 0;
-            border-bottom: 1px solid #252d45;
+            position: relative;
+            padding: 34px 0 28px;
+            border-bottom: 1px solid var(--border);
         }
 
-        header h1 {
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--success);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 0 rgba(67, 209, 154, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: clamp(28px, 4vw, 44px);
+            line-height: 1.1;
+            letter-spacing: -1.5px;
         }
 
-        header p {
-            color: #8f9bb7;
-            margin-bottom: 0;
+        .subtitle {
+            max-width: 650px;
+            margin: 14px 0 0;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .header-badge {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.025);
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         main {
-            padding: 35px 0 60px;
+            padding: 34px 0 70px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: 360px 1fr;
+            grid-template-columns: 370px 1fr;
             gap: 24px;
+            align-items: start;
         }
 
         .card {
-            background: #121a2d;
-            border: 1px solid #27314b;
-            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
             padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(113, 133, 255, 0.45);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+        }
+
+        .card:hover::before {
+            left: 130%;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         h2 {
-            margin-top: 0;
-            font-size: 19px;
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+        }
+
+        .section-number {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--primary);
+            background: rgba(113, 133, 255, 0.08);
+            font-size: 12px;
+            font-weight: 700;
         }
 
         label {
             display: block;
-            margin: 16px 0 7px;
-            color: #aeb8cf;
-            font-size: 14px;
+            margin: 17px 0 8px;
+            color: #b8c5df;
+            font-size: 13px;
+            font-weight: 600;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #303b59;
-            background: #0d1425;
-            color: white;
+            padding: 13px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
             outline: none;
+            color: var(--text);
+            background: rgba(4, 9, 20, 0.65);
+            font: inherit;
+            transition:
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        input::placeholder {
+            color: #657492;
+        }
+
+        input:hover {
+            border-color: rgba(113, 133, 255, 0.4);
         }
 
         input:focus {
-            border-color: #647cff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(113, 133, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .button-group {
+            display: grid;
+            gap: 10px;
+            margin-top: 22px;
         }
 
         button {
+            position: relative;
+            overflow: hidden;
             width: 100%;
-            padding: 13px;
-            margin-top: 20px;
-            border: 0;
-            border-radius: 8px;
-            background: #647cff;
+            padding: 13px 16px;
+            border: 1px solid transparent;
+            border-radius: 10px;
             color: white;
-            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                opacity 0.25s ease;
+        }
+
+        button::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.2),
+                transparent
+            );
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
         }
 
         button:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(86, 108, 240, 0.28);
+        }
+
+        button:hover::after {
+            left: 140%;
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
         }
 
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.55;
             cursor: wait;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .secondary-button {
+            border-color: var(--border);
+            background: rgba(255,255,255,0.045);
+            color: #cbd6ef;
+        }
+
+        .secondary-button:hover {
+            border-color: rgba(113, 133, 255, 0.45);
+            background: rgba(113, 133, 255, 0.1);
         }
 
         .status {
-            margin-top: 15px;
-            color: #8f9bb7;
-            font-size: 14px;
+            min-height: 20px;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .status.success {
+            color: var(--success);
+        }
+
+        .status.error {
+            color: var(--danger);
+        }
+
+        .status.loading {
+            color: var(--primary);
+        }
+
+        .status.loading::after {
+            content: "";
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 8px;
+            vertical-align: -2px;
+            border: 2px solid rgba(113,133,255,0.25);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         .result {
+            min-height: 150px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #dce5f8;
+            background: rgba(4, 9, 20, 0.35);
+            line-height: 1.75;
             white-space: pre-wrap;
-            line-height: 1.65;
-            color: #dce3f5;
+            overflow-wrap: anywhere;
+            animation: contentIn 0.35s ease;
+        }
+
+        .empty {
+            color: #657492;
+        }
+
+        .result.active {
+            border-color: rgba(113, 133, 255, 0.25);
         }
 
         .job {
-            border-top: 1px solid #27314b;
-            padding: 15px 0;
+            padding: 17px 0;
+            border-top: 1px solid var(--border);
+            animation: fadeUp 0.4s ease both;
         }
 
         .job:first-child {
+            padding-top: 0;
             border-top: 0;
         }
 
         .job-title {
-            font-weight: 600;
+            color: #f1f5ff;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.5;
         }
 
         .job-meta {
-            color: #8f9bb7;
+            margin-top: 6px;
+            color: var(--muted);
             font-size: 13px;
-            margin-top: 5px;
         }
 
-        .empty {
-            color: #8f9bb7;
+        .job-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #9baaff;
+            font-size: 13px;
+            text-decoration: none;
+            transition:
+                color 0.2s ease,
+                transform 0.2s ease;
         }
 
-        @media (max-width: 800px) {
+        .job-link:hover {
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .stat {
+            padding: 13px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.025);
+        }
+
+        .stat-value {
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        footer {
+            padding: 0 0 30px;
+            color: #596987;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes contentIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(67, 209, 154, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(67, 209, 154, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(67, 209, 154, 0);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .header-content {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
             .grid {
                 grid-template-columns: 1fr;
+            }
+
+            .header-badge {
+                display: none;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                width: min(94%, 1200px);
+            }
+
+            header {
+                padding: 26px 0 22px;
+            }
+
+            main {
+                padding-top: 24px;
+            }
+
+            .card {
+                padding: 18px;
+                border-radius: 15px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 30px;
             }
         }
     </style>
@@ -148,9 +524,24 @@
 <body>
 
 <header>
-    <div class="container">
-        <h1>AI Engineering Command Center</h1>
-        <p>Personalized AI career intelligence and preparation planning.</p>
+    <div class="container header-content">
+        <div>
+            <div class="eyebrow">
+                <span class="pulse"></span>
+                Live AI Career Intelligence
+            </div>
+
+            <h1>AI Engineering<br>Command Center</h1>
+
+            <p class="subtitle">
+                Build a personalized preparation strategy using live market
+                intelligence, your current knowledge, and your target role.
+            </p>
+        </div>
+
+        <div class="header-badge">
+            Real-time career intelligence
+        </div>
     </div>
 </header>
 
@@ -159,64 +550,138 @@
     <div class="grid">
 
         <section>
+
             <div class="card">
-                <h2>Your Profile</h2>
+                <div class="card-header">
+                    <h2>Your Profile</h2>
+                    <span class="section-number">01</span>
+                </div>
 
-                <label>Target Role</label>
-                <input id="role" placeholder="e.g. Applied AI Engineer">
+                <label for="role">Target Role</label>
+                <input
+                    id="role"
+                    placeholder="e.g. Applied AI Engineer"
+                    autocomplete="off"
+                >
 
-                <label>Specialization</label>
-                <input id="specialization" placeholder="e.g. LLM and Agentic AI">
+                <label for="specialization">Specialization</label>
+                <input
+                    id="specialization"
+                    placeholder="e.g. LLMs, Agents, RAG"
+                    autocomplete="off"
+                >
 
-                <label>Target Companies</label>
-                <input id="companies" placeholder="Anthropic, Microsoft">
+                <label for="companies">Target Companies</label>
+                <input
+                    id="companies"
+                    placeholder="e.g. Microsoft, Anthropic"
+                    autocomplete="off"
+                >
 
-                <label>Preparation Days</label>
-                <input id="days" type="number" value="30">
+                <label for="days">Preparation Days</label>
+                <input
+                    id="days"
+                    type="number"
+                    min="1"
+                    value="30"
+                >
 
-                <label>Current Knowledge</label>
-                <input id="knowledge" placeholder="Python, LLMs, RAG, LangChain, MCP">
+                <label for="knowledge">Current Knowledge</label>
+                <input
+                    id="knowledge"
+                    placeholder="Python, RAG, LangChain, MCP"
+                    autocomplete="off"
+                >
 
-                <button id="saveBtn" onclick="saveProfile()">
-                    Save Profile
-                </button>
+                <div class="button-group">
+                    <button id="saveBtn" onclick="saveProfile()">
+                        Save Profile
+                    </button>
 
-                <button id="planBtn" onclick="generatePlan()">
-                    Generate Preparation Plan
-                </button>
+                    <button
+                        id="planBtn"
+                        class="secondary-button"
+                        onclick="generatePlan()"
+                    >
+                        Generate Preparation Plan
+                    </button>
+                </div>
 
                 <div id="status" class="status"></div>
             </div>
 
             <div class="card">
-                <h2>Market Intelligence</h2>
-                <button onclick="analyzeMarket()">
+                <div class="card-header">
+                    <h2>Market Intelligence</h2>
+                    <span class="section-number">02</span>
+                </div>
+
+                <p class="subtitle">
+                    Analyze live job-market data for your selected role and
+                    specialization.
+                </p>
+
+                <button
+                    id="marketBtn"
+                    class="secondary-button"
+                    onclick="analyzeMarket(this)"
+                >
                     Analyze Current Market
                 </button>
 
                 <div id="marketStatus" class="status"></div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div id="jobsCount" class="stat-value">—</div>
+                        <div class="stat-label">Jobs Found</div>
+                    </div>
+
+                    <div class="stat">
+                        <div id="roleStat" class="stat-value">—</div>
+                        <div class="stat-label">Target Role</div>
+                    </div>
+
+                    <div class="stat">
+                        <div id="daysStat" class="stat-value">—</div>
+                        <div class="stat-label">Prep Days</div>
+                    </div>
+                </div>
             </div>
+
         </section>
 
         <section>
 
             <div class="card">
-                <h2>Preparation Plan</h2>
+                <div class="card-header">
+                    <h2>Preparation Plan</h2>
+                    <span class="section-number">03</span>
+                </div>
+
                 <div id="plan" class="result empty">
                     Your personalized preparation plan will appear here.
                 </div>
             </div>
 
             <div class="card">
-                <h2>Market Analysis</h2>
+                <div class="card-header">
+                    <h2>Market Analysis</h2>
+                    <span class="section-number">04</span>
+                </div>
+
                 <div id="market" class="result empty">
                     Market intelligence will appear here.
                 </div>
             </div>
 
             <div class="card">
-                <h2>Matching Jobs</h2>
-                <div id="jobs" class="empty">
+                <div class="card-header">
+                    <h2>Matching Jobs</h2>
+                    <span class="section-number">05</span>
+                </div>
+
+                <div id="jobs" class="result empty">
                     No jobs loaded yet.
                 </div>
             </div>
@@ -227,7 +692,41 @@
 
 </main>
 
+<footer>
+    AI Engineering Command Center · Live data · Personalized intelligence
+</footer>
+
 <script>
+
+function getProfile() {
+    return {
+        role: document.getElementById("role").value.trim(),
+        specialization: document.getElementById("specialization").value.trim(),
+        target_companies: document.getElementById("companies").value
+            .split(",")
+            .map(value => value.trim())
+            .filter(Boolean),
+        preparation_days: Number(document.getElementById("days").value),
+        current_knowledge: document.getElementById("knowledge").value
+            .split(",")
+            .map(value => value.trim())
+            .filter(Boolean)
+    };
+}
+
+
+function setStatus(element, message, type = "") {
+    element.textContent = message;
+    element.className = `status ${type}`;
+}
+
+
+function setResult(element, message, empty = false) {
+    element.textContent = message;
+    element.classList.toggle("empty", empty);
+    element.classList.add("active");
+}
+
 
 async function saveProfile() {
 
@@ -235,23 +734,19 @@ async function saveProfile() {
     const status = document.getElementById("status");
 
     button.disabled = true;
-    status.textContent = "Saving profile...";
-
-    const profile = {
-        role: document.getElementById("role").value,
-        specialization: document.getElementById("specialization").value,
-        target_companies: document.getElementById("companies").value
-            .split(",")
-            .map(x => x.trim())
-            .filter(Boolean),
-        preparation_days: Number(document.getElementById("days").value),
-        current_knowledge: document.getElementById("knowledge").value
-            .split(",")
-            .map(x => x.trim())
-            .filter(Boolean)
-    };
+    setStatus(status, "Saving profile...", "loading");
 
     try {
+
+        const profile = getProfile();
+
+        if (!profile.role) {
+            throw new Error("Please enter your target role.");
+        }
+
+        if (!profile.preparation_days || profile.preparation_days < 1) {
+            throw new Error("Preparation days must be at least 1.");
+        }
 
         const response = await fetch("/api/v1/profile", {
             method: "POST",
@@ -264,16 +759,17 @@ async function saveProfile() {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.detail || "Failed to save profile");
+            throw new Error(data.detail || "Failed to save profile.");
         }
 
-        status.textContent = "Profile saved successfully.";
+        setStatus(status, "Profile saved successfully.", "success");
+        updateStats();
 
     } catch (error) {
-        status.textContent = error.message;
+        setStatus(status, error.message, "error");
+    } finally {
+        button.disabled = false;
     }
-
-    button.disabled = false;
 }
 
 
@@ -302,9 +798,24 @@ async function loadProfile() {
         document.getElementById("knowledge").value =
             (profile.current_knowledge || []).join(", ");
 
+        updateStats();
+
     } catch (error) {
-        console.error(error);
+        console.error("Profile loading failed:", error);
     }
+}
+
+
+function updateStats() {
+
+    const role = document.getElementById("role").value.trim();
+    const days = document.getElementById("days").value;
+
+    document.getElementById("roleStat").textContent =
+        role ? role.split(" ")[0] : "—";
+
+    document.getElementById("daysStat").textContent =
+        days || "—";
 }
 
 
@@ -315,10 +826,16 @@ async function generatePlan() {
     const status = document.getElementById("status");
 
     button.disabled = true;
-    status.textContent = "Generating plan from live market data...";
-    plan.textContent = "Analyzing job market and generating roadmap...";
+    setStatus(status, "Generating plan from live market data...", "loading");
+    setResult(plan, "Analyzing your profile, current market demand, and preparation timeline...");
 
     try {
+
+        const profile = getProfile();
+
+        if (!profile.role) {
+            throw new Error("Please enter your target role first.");
+        }
 
         const response = await fetch("/api/v1/plan/generate", {
             method: "POST"
@@ -327,42 +844,44 @@ async function generatePlan() {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.detail || "Plan generation failed");
+            throw new Error(data.detail || "Plan generation failed.");
         }
 
-        plan.textContent = data.plan;
-        plan.classList.remove("empty");
-
-        status.textContent = "Preparation plan generated.";
+        setResult(plan, data.plan);
+        setStatus(status, "Preparation plan generated successfully.", "success");
 
     } catch (error) {
 
-        plan.textContent = error.message;
-        status.textContent = "Generation failed.";
+        setResult(plan, error.message);
+        setStatus(status, "Plan generation failed.", "error");
 
+    } finally {
+        button.disabled = false;
     }
-
-    button.disabled = false;
 }
 
 
-async function analyzeMarket() {
+async function analyzeMarket(button) {
 
-    const button = event.target;
     const market = document.getElementById("market");
     const jobsContainer = document.getElementById("jobs");
     const status = document.getElementById("marketStatus");
 
     button.disabled = true;
 
-    const role = document.getElementById("role").value;
-    const specialization = document.getElementById("specialization").value;
+    const role = document.getElementById("role").value.trim();
+    const specialization =
+        document.getElementById("specialization").value.trim();
 
-    status.textContent = "Retrieving live job data...";
-    market.textContent = "Analyzing...";
-    jobsContainer.textContent = "Loading jobs...";
+    setStatus(status, "Retrieving live job data...", "loading");
+    setResult(market, "Analyzing live market data...");
+    setResult(jobsContainer, "Loading matching jobs...");
 
     try {
+
+        if (!role) {
+            throw new Error("Please enter your target role first.");
+        }
 
         const response = await fetch("/api/v1/market/analyze", {
             method: "POST",
@@ -378,25 +897,29 @@ async function analyzeMarket() {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.detail || "Market analysis failed");
+            throw new Error(data.detail || "Market analysis failed.");
         }
 
-        market.textContent = data.analysis;
-        market.classList.remove("empty");
-
+        setResult(market, data.analysis);
         renderJobs(data.jobs);
 
-        status.textContent =
-            `${data.jobs_found} jobs analyzed successfully.`;
+        document.getElementById("jobsCount").textContent =
+            data.jobs_found ?? data.jobs?.length ?? 0;
+
+        setStatus(
+            status,
+            `${data.jobs_found ?? data.jobs?.length ?? 0} live jobs analyzed successfully.`,
+            "success"
+        );
 
     } catch (error) {
 
-        market.textContent = error.message;
-        status.textContent = "Market analysis failed.";
+        setResult(market, error.message);
+        setStatus(status, "Market analysis failed.", "error");
 
+    } finally {
+        button.disabled = false;
     }
-
-    button.disabled = false;
 }
 
 
@@ -405,57 +928,51 @@ function renderJobs(jobs) {
     const container = document.getElementById("jobs");
 
     if (!jobs || jobs.length === 0) {
-        container.textContent = "No matching jobs found.";
+        setResult(container, "No matching jobs found.", true);
         return;
     }
 
     container.innerHTML = "";
+    container.classList.remove("empty");
+    container.classList.add("active");
 
-    jobs.forEach(job => {
+    jobs.forEach((item, index) => {
+
+        const job = item.job || item;
 
         const div = document.createElement("div");
         div.className = "job";
+        div.style.animationDelay = `${index * 0.05}s`;
 
-        div.innerHTML = `
-            <div class="job-title">
-                ${escapeHtml(job.title || "")}
-            </div>
+        const title = document.createElement("div");
+        title.className = "job-title";
+        title.textContent = job.title || "Untitled role";
 
-            <div class="job-meta">
-                ${escapeHtml(job.company || "")}
-                ·
-                ${escapeHtml(job.location || "Location unavailable")}
-            </div>
+        const meta = document.createElement("div");
+        meta.className = "job-meta";
+        meta.textContent =
+            `${job.company || "Unknown company"} · ${job.location || "Location unavailable"}`;
 
-            ${
-                job.url
-                ? `<div class="job-meta">
-                    <a href="${escapeHtml(job.url)}"
-                       target="_blank"
-                       rel="noopener"
-                       style="color:#8fa1ff">
-                       View job
-                    </a>
-                   </div>`
-                : ""
-            }
-        `;
+        div.appendChild(title);
+        div.appendChild(meta);
+
+        if (job.url) {
+            const link = document.createElement("a");
+            link.className = "job-link";
+            link.href = job.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "View live job →";
+            div.appendChild(link);
+        }
 
         container.appendChild(div);
     });
 }
 
 
-function escapeHtml(value) {
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
+document.getElementById("role").addEventListener("input", updateStats);
+document.getElementById("days").addEventListener("input", updateStats);
 
 loadProfile();
 
