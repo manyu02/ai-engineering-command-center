@@ -54,6 +54,15 @@ Rules:
 
         response = await self.llm.ainvoke(prompt)
 
+        content = response.content
+
+        if isinstance(content, list):
+            content = "\n".join(
+                item.get("text", "")
+                if isinstance(item, dict)
+                else str(item)
+                for item in content
+            )
         return {
-            "question": response.content.strip()
+            "question": str(content).strip()
         }
